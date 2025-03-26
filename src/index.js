@@ -14,7 +14,7 @@ dotenv.config({
 
 import connectDB from "./db/db.js";
 
-
+ 
 
 
 connectDB()
@@ -25,7 +25,7 @@ connectDB()
 })
 .catch((error) => {
    console.log("Connection Failed ..!!", error)
-}) 
+})  
 
 
 

@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import fileRouter from "./routes/file.routes.js";
 
 
 const app = express();
@@ -60,6 +61,8 @@ app.use("/api/v1/student", trainerRouter)
  import usersRouter from "./routes/student.routes.js"
 
  app.use("/api/v1/student", usersRouter)
+
+ app.use('/api/v1/files',fileRouter);
 
 // // routes import
 
