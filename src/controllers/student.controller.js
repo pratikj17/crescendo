@@ -27,15 +27,36 @@ const generateAccessAndRefereshTokens = async (userId) => {
 
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, StaffId, RollNo, Batch,  email, fullname, password} = req.body;
+    const { 
+        username, 
+        RollNo, 
+        Batch, 
+        email, 
+        fullname, 
+        dob, 
+        Number,      
+        Fname,       
+        Fnumber,     
+        Fmail,       
+        Mname,      
+        Mnumber,    
+        resume,      
+        password 
+    } = req.body;
 
-    console.log(username, RollNo , Batch,  email, fullname, password)
-    if ([fullname, email, username, password, RollNo].some((field) => !field?.trim())) {
+  
+    if ([username, RollNo, email, fullname, dob, Fname, Fnumber, Mname, Mnumber, password].some(field => !field?.toString().trim())) {
         res.status(400);
-        throw new Error("All fields are required");
+        throw new Error("All required fields must be provided");
     }
 
+   
+    if (resume && !resume.toLowerCase().endsWith('.pdf')) {
+        res.status(400);
+        throw new Error("Resume must be a PDF file");
+    }
 
+    
     const existedUser = await Student.findOne({
         $or: [{ username }, { email }]
     });
@@ -45,25 +66,27 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error("User with email or username already exists");
     }
 
-
-
     const user = await Student.create({
         username,
-        email,
         RollNo,
-        Batch,
-        StaffId,
-        password,
+        Batch,       
+        email,
         fullname,
-
+        dob,
+        Number,
+        Fname,
+        Fnumber,
+        Fmail,
+        Mname,
+        Mnumber,
+        resume,
+        password
     });
 
     if (!user) {
         res.status(500);
         throw new Error("Something went wrong while registering the user");
     }
-    
-
 
     res.status(201).json({
         message: "User created successfully",
@@ -72,6 +95,7 @@ const registerUser = asyncHandler(async (req, res) => {
             username: user.username,
             email: user.email,
             fullname: user.fullname,
+            resume: user.resume
         }
     });
 });
@@ -112,7 +136,7 @@ const loginUser = asyncHandler(async (req, res) => {
         secure: true,
         sameSite: "None"
     }
-    res.status(200).cookie("accessToken", accessToken, optionals).cookie("refreshToken", refreshToken, optionals).cookie("email", email, optionals).json({
+    res.status(200).cookie("accessToken", accessToken, optionals).cookie("refreshToken", refreshToken, optionals).cookie("email", email, optionals).cookie("Identity" , "student", optionals).json({
         message: "Login successful",
         accessToken,
         refreshToken,
@@ -205,7 +229,45 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 
-export { registerUser, loginUser,  logout, refreshAccessToken}
+
+const getStudentProfileByUsername = asyncHandler(async (req, res) => {
+   
+    const { username } = req.query;
+ 
+
+    const student = await Student.findOne({ username: username });
+
+    if (!student) {
+        res.status(404);
+        throw new Error("Student not found");
+    }
+
+
+    res.status(200).json({
+        student: {
+            id: student._id,
+            username: student.username,
+            RollNo: student.RollNo,
+            Batch: student.Batch,
+            email: student.email,
+            fullname: student.fullname,
+            dob: student.dob,
+            Number: student.Number,
+            Fname: student.Fname,
+            Fnumber: student.Fnumber,
+            Fmail: student.Fmail,
+            Mname: student.Mname,
+            Mnumber: student.Mnumber,
+            resume: student.resume,
+            createdAt: student.createdAt,
+            updatedAt: student.updatedAt
+        }
+    });
+});
+
+
+
+export { registerUser, loginUser,  logout, refreshAccessToken, getStudentProfileByUsername}
 
 
 

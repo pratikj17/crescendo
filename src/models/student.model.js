@@ -33,6 +33,10 @@ const studentSchema = new Schema({
         trim : true,
         index : true
      },
+     dob : {
+        type : Date,
+        required : true
+     },
      Number : {
         type : Number
      },
@@ -44,6 +48,9 @@ const studentSchema = new Schema({
         type : Number,
         required : true
      },
+     Fmail : {
+        type : String
+     },
      Mname : {
         type : String,
         required : true
@@ -52,6 +59,9 @@ const studentSchema = new Schema({
         type : Number,
         required : true
      }, 
+     resume : {
+        type : String
+     },
      password: {
         type: String,
         required: [true, "Password is required"],

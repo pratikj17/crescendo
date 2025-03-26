@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {registerUser, loginUser,logout} from "../controllers/student.controller.js"
+import {registerUser, loginUser,logout, getStudentProfileByUsername} from "../controllers/student.controller.js"
 import express from "express"
 import { verifyJWT } from "../middleware/auth.middleware.js"
 import { get } from "mongoose"
@@ -23,6 +23,10 @@ router.route("/studentlogin").post(
 
 router.route("/studentlogout").post(
     logout
+)
+
+router.route("/profile").get(
+    getStudentProfileByUsername
 )
 
 
