@@ -50,12 +50,11 @@ app.use(function (req, res, next) {
 });
 
 import adminRouter from "./routes/admin.routes.js"
-
-app.use("/api/v1/student", adminRouter)
+app.use("/api/v1/admin", adminRouter)
 
 import trainerRouter from "./routes/trainer.routes.js"
 
-app.use("/api/v1/student", trainerRouter)
+app.use("/api/v1/trainer", trainerRouter)
 
  import usersRouter from "./routes/student.routes.js"
 

@@ -33,6 +33,25 @@ const studentSchema = new Schema({
         trim : true,
         index : true
      },
+     Number : {
+        type : Number
+     },
+     Fname : {
+        type : String, 
+        required : true
+     },
+     Fnumber : {
+        type : Number,
+        required : true
+     },
+     Mname : {
+        type : String,
+        required : true
+     },
+     Mnumber : {
+        type : Number,
+        required : true
+     }, 
      password: {
         type: String,
         required: [true, "Password is required"],
