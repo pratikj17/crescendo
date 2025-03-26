@@ -1,5 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Admin } from "../models/admin.model.js";
+import { Trainer } from "../models/trainer.model.js";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -203,4 +204,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 
-export { registerUser, loginUser,  logout, refreshAccessToken}
+const getTrainer = asyncHandler(async (req, res) => {
+     
+    const user = await Trainer.find().select(
+        "-password -refreshToken"
+    );
+
+    return res
+        .status(200)
+        .send(user)
+
+})
+
+export { registerUser, loginUser,  logout, refreshAccessToken, getTrainer}

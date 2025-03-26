@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {registerUser, loginUser,logout} from "../controllers/admin.controllers.js"
+import {registerUser, loginUser,logout, getTrainer} from "../controllers/admin.controllers.js"
 import express from "express"
 import { verifyJWT } from "../middleware/auth.middleware.js"
 import { get } from "mongoose"
@@ -24,6 +24,10 @@ router.route("/adminlogout").post(
     logout
 )
 
+
+router.route("/getTrainer").get(
+       getTrainer
+)
 
 
 app.use((err, req, res, next) => {
