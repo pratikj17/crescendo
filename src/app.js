@@ -6,7 +6,7 @@ import fileRouter from "./routes/file.routes.js";
 
 const app = express();
 
-const allowedOrigins = ["https://glitched.gamedevutopia.in", "https://gdu-feb25-event-be.onrender.com", "http://localhost:3000"];
+const allowedOrigins = ["https://glitched.gamedevutopia.in", "https://gdu-feb25-event-be.onrender.com", "http://localhost:3000","http://localhost:5174"];
 
 app.use(
     cors({

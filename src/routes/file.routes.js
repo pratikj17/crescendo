@@ -8,7 +8,7 @@ dotenv.config();
 const fileRouter = express.Router();
 
 // Upload Route
-fileRouter.post("/upload",verifyIdentity, upload.single("file"), handleUpload);
+fileRouter.post("/upload", upload.single("file"), handleUpload);
 
 // Download Route
 fileRouter.get("/download/:fileKey", handleDownload);

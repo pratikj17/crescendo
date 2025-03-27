@@ -48,6 +48,7 @@ function getContentType(fileKey) {
 }
 
 export const handleUpload=async (req, res) => {
+    console.log(req.body);
     try {
         if (!req.file) {
         return res.status(400).json({ message: "File upload failed" });
