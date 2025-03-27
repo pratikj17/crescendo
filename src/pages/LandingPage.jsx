@@ -13,20 +13,20 @@ const LandingPage = () => {
       <Navbar />
       <div className="content">
         <h1>Welcome to the Learning Portal</h1>
-        <p>
+        <p id="p">
           Your one-stop solution for structured learning and efficient content
           management.
         </p>
         <div className="role-selection">
-          <a href="/student-login" className="role-icon">
+          <a href="/studentlogin" className="role-icon">
             <FontAwesomeIcon icon={faUserGraduate} size="4x" />
             <p>Student</p>
           </a>
-          <a href="/teacher-login" className="role-icon">
+          <a href="/trainerlogin" className="role-icon">
             <FontAwesomeIcon icon={faChalkboardTeacher} size="4x" />
             <p>Teacher</p>
           </a>
-          <a href="/admin-login" className="role-icon">
+          <a href="/adminlogin" className="role-icon">
             <FontAwesomeIcon icon={faUserShield} size="4x" />
             <p>Admin</p>
           </a>

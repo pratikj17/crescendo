@@ -65,11 +65,12 @@ const Login = () => {
             />
           </div>
           {error && <div className="error-message">{error}</div>}
-          <div className="forgot-password">
-            Forgot password? <span>Click Here!</span>
-          </div>
           <button type="submit" className="submit">Login</button>
-        </form>
+        </form> <div className="auth-links">
+        <p onClick={() => navigate('/forgot-password')} style={{ cursor: 'pointer', color: '#007bff' }}>Forgot Password?</p>
+        <p onClick={() => navigate('/adminSignup')} style={{ cursor: 'pointer', color: '#007bff' }}><span style={{color: "black"}}>Don't have an account?</span> Sign Up</p>
+      </div>
+
       </div>
       <div className="image-container">
         {/* <img src={image} alt="Signup illustration" className="signup-image" /> */}

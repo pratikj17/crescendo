@@ -38,6 +38,10 @@ const TrainerLogin = () => {
         {error && <div className="error-message">{error}</div>}
         <button type="submit">Login</button>
       </form>
+      <div className="auth-links">
+        <p onClick={() => navigate('/forgot-password')} style={{ cursor: 'pointer', color: '#007bff' }}>Forgot Password?</p>
+        <p onClick={() => navigate('/trainersignup')} style={{ cursor: 'pointer', color: '#007bff' }}><span style={{color: "black"}}>Don't have an account?</span> Sign Up</p>
+      </div>
     </div>
   );
 };

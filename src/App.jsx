@@ -7,6 +7,7 @@ import TrainerLogin from "./components/TrainerLoginSignup/TrainerLogin.jsx"
 import TrainerSignup from "./components/TrainerLoginSignup/TrainerSignup.jsx"
 import StudentLogin from "./components/StudentLoginSignup/studentLogin"
 import StudentSignup from "./components/StudentLoginSignup/studentSignup.jsx"
+import UploadForm from "./components/uploadDocument/uploadform.jsx"
 
 
 const App = () => {
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/adminSignup" element={<AdminSignup />} />
         <Route path="/trainerlogin" element={<TrainerLogin/>}/>
         <Route path="/trainersignup" element={<TrainerSignup/>}/>
+        <Route path="/upload" element={<UploadForm />}/>
       </Routes>
     </Router>
   );

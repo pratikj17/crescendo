@@ -40,7 +40,7 @@ body {
 .header .underline {
     width: 60px;
     height: 4px;
-    background-color: #007bff;
+    background-color: #4a33b3;
     margin: 10px auto;
 }
 
@@ -89,7 +89,7 @@ body {
 
 /* Submit Button */
 .submit {
-    background-color: #007bff;
+    background-color: #4a33b3;
     color: white;
     padding: 12px;
     border: none;
@@ -101,7 +101,7 @@ body {
 }
 
 .submit:hover {
-    background-color: #0056b3;
+    background-color: #4a33b3;
 }
 
 /* Image Container */

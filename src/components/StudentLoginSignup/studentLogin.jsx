@@ -14,10 +14,7 @@ const StudentLogin = () => {
     setError('');
 
     try {
-      const response = await axios.post('localhost:8000/api/v1/student/studentLogin', {
-        email,
-        password,
-      });
+      const response = await axios.post('http://localhost:8000/api/v1/student/studentLogin',{ email, password }, { withCredentials: true });
 
       if (response.status === 200) {
         console.log("Login successful");
@@ -38,6 +35,10 @@ const StudentLogin = () => {
         {error && <div className="error-message">{error}</div>}
         <button type="submit">Login</button>
       </form>
+      <div className="auth-links">
+        <p onClick={() => navigate('/forgot-password')} style={{ cursor: 'pointer', color: '#007bff' }}>Forgot Password?</p>
+        <p onClick={() => navigate('/studentsignup')} style={{ cursor: 'pointer', color: '#007bff' }}><span style={{color: "black"}}>Don't have an account?</span> Sign Up</p>
+      </div>
     </div>
   );
 };
