@@ -60,6 +60,9 @@ app.use("/api/v1/trainer", trainerRouter)
 
  app.use("/api/v1/student", usersRouter)
 
+ import fileRouter from "./routes/file.routes.js";
+ app.use('/api/v1/files',fileRouter);
+
 // // routes import
 
 // import userRouter from './routes/user.route.js'
