@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {registerUser, loginUser,logout, getTrainer} from "../controllers/admin.controllers.js"
+import {registerUser, loginUser,logout, getTrainer, getStudent, getBatches, addBatch} from "../controllers/admin.controllers.js"
 import express from "express"
 import { verifyJWT } from "../middleware/auth.middleware.js"
 import { get } from "mongoose"
@@ -29,6 +29,19 @@ router.route("/getTrainer").get(
        getTrainer
 )
 
+router.route("/getStudents").get(
+    getStudent
+)
+
+
+router.route("/getBatch").get(
+    getBatches
+)
+
+
+router.route("/addBatch").post(
+    addBatch
+)
 
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error
@@ -38,5 +51,7 @@ app.use((err, req, res, next) => {
         message: err.message || 'Internal Server Error',
     });
 });
+
+
 
 export default router

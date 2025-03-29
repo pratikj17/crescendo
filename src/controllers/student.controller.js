@@ -1,5 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Student } from "../models/student.model.js";
+import { Assignments } from "../models/assignments.model.js";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -266,8 +267,47 @@ const getStudentProfileByUsername = asyncHandler(async (req, res) => {
 });
 
 
+const getStudentAssignmentdata = asyncHandler(async(req, res) => {
+      const username = req.query
 
-export { registerUser, loginUser,  logout, refreshAccessToken, getStudentProfileByUsername}
+      if (!username) {
+        res.status(400);
+        throw new Error("Student fullname is required");
+    }
+
+   
+    const student = await Student.findOne({ username });
+
+    if (!student) {
+        res.status(404);
+        throw new Error("Student not found");
+    }
+
+    
+    const allAssignments = await Assignments.find();
+
+    
+    let completedAssignments = [];
+    let pendingAssignments = [];
+
+    allAssignments.forEach(assignment => {
+        if (assignment.submittedBy.includes(student._id)) {
+            completedAssignments.push(assignment.title);
+        } else {
+            pendingAssignments.push(assignment.title);
+        }
+    });
+
+    res.status(200).json({
+        student: fullname,
+        completedAssignments,
+        pendingAssignments
+    });
+})
+
+
+
+export { registerUser, loginUser,  logout, refreshAccessToken, getStudentProfileByUsername, getStudentAssignmentdata}
 
 
 

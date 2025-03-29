@@ -1,5 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Trainer } from "../models/trainer.model.js";
+import { Student } from "../models/student.model.js";
+import { Assignments } from "../models/assignments.model.js";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -203,8 +205,150 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 });
 
+const getBatches = asyncHandler(async (req, res) => {
+   
+    const teacher =  req.query.username;
+    
+    if(!teacher){
+        res.status(401);
+        throw new Error("Please provide the teacher username");
+    }
+    
+    const batch = await Trainer.aggregate([
+        {
+            $match: { username: teacher },
+        },
+        {
+            $project: { Batches: 1, _id: 0 }, // Only return Batches field
+        },
+    ]);
 
-export { registerUser, loginUser,  logout, refreshAccessToken}
+    if (!batch.length) {
+        res.status(400);
+        throw new Error("No batch provided yet");
+    }
+
+    return res.status(200).json(batch[0].Batches);
+
+})
+
+const getAbatch = asyncHandler(async (req, res) => {
+    const batch = req.query.batch;
+    console.log(batch)
+    if(!batch){
+        res.status(404);
+        throw new Error("Batch not selected");
+    }
+
+    const student = await Student.aggregate([
+        {
+            $match: { Batch: batch },
+        },
+        {
+            $project: { fullname : 1, _id: 1, username : 1, RollNo : 1}, 
+        },
+    ]);
+    if(student.length === 0){
+        res.status(404);
+        throw new Error("No students found for this batch");
+    }
+    res.status(200).json(student);
+})
+
+
+const getUploadedAssignments = asyncHandler(async (req, res) => {
+    const batch = req.query.batch;
+    
+    if(!batch){
+        res.status(404);
+        throw new Error("Batch not selected");
+    }
+
+    const assignment = Assignments.find({batch});
+    if(assignment.length === 0){
+        res.status(404);
+        throw new Error("No uploaded assignment found for this batch");
+    }
+    res.status(200).json(assignment);
+
+})
+
+
+const addStudent = asyncHandler(async (req, res) => {
+    const {fullname} = req.body;
+    const batch = req.query.batch;
+
+    if(!fullname){
+        res.status(404);
+        throw new Error("No student provided");
+    }
+    
+    const user = await Student.findOne({ fullname });
+
+   
+    if (!user) {
+        res.status(404);
+        throw new Error("Student not found");
+    }
+
+    user.Batch = batch;
+
+    const updatedStudent = await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Batch updated successfully",
+        student: updatedStudent
+    });
+
+})
+
+
+const submittedornot = asyncHandler(async (req, res) => {
+    const { assignment, batch } = req.query;
+
+    if (!assignment || !batch) {
+        return res.status(400).json({ success: false, message: "Assignment and batch are required" });
+    }
+
+    const students = await Student.find({ Batch: batch }, { fullname: 1, _id: 1, username: 1, RollNo: 1 });
+
+    if (!students.length) {
+        return res.status(404).json({ success: false, message: "No students found in this batch" });
+    }
+
+    const submittedAssignments = await Assignments.find({ assignment }, { studentIds: 1 });
+
+    const submittedStudentIds = new Set(submittedAssignments.flatMap(a => a.studentIds));
+
+    const submitted = [];
+    const notSubmitted = [];
+
+    students.forEach(student => {
+        if (submittedStudentIds.has(student._id.toString())) {
+            submitted.push(student);
+        } else {
+            notSubmitted.push(student);
+        }
+    });
+
+    res.status(200).json({
+        success: true,
+        totalStudents: students.length,
+        submittedCount: submitted.length,
+        notSubmittedCount: notSubmitted.length,
+        submitted,
+        notSubmitted
+    });
+});
+
+
+
+
+
+
+
+export { registerUser, loginUser,  logout, refreshAccessToken, getBatches, getAbatch, getUploadedAssignments, addStudent, submittedornot}
 
 
 

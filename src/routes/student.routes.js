@@ -1,5 +1,5 @@
 import {Router} from "express"
-import {registerUser, loginUser,logout, getStudentProfileByUsername} from "../controllers/student.controller.js"
+import {registerUser, loginUser,logout, getStudentProfileByUsername, getStudentAssignmentdata} from "../controllers/student.controller.js"
 import express from "express"
 import { verifyJWT } from "../middleware/auth.middleware.js"
 import { get } from "mongoose"
@@ -29,6 +29,10 @@ router.route("/profile").get(
     getStudentProfileByUsername
 )
 
+
+router.route("/studentAssignment").get(
+     getStudentAssignmentdata
+)
 
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error

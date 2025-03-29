@@ -1,6 +1,6 @@
 import {Router} from "express"
 
-import {registerUser, loginUser,logout} from "../controllers/trainer.controller.js"
+import {registerUser, loginUser,logout, getBatches, getAbatch, getUploadedAssignments, addStudent, submittedornot} from "../controllers/trainer.controller.js"
 
 import express from "express"
 import { verifyJWT } from "../middleware/auth.middleware.js"
@@ -29,7 +29,27 @@ router.route("/trainerlogout").post(
     logout
 )
 
+router.route("/getBatches").get(
+    getBatches
+)
 
+
+router.route("/getAbatch").get(
+    getAbatch
+)
+
+router.route("/assignments").get(
+    getUploadedAssignments
+)
+
+
+router.route("/addstudent").post(
+    addStudent
+)
+
+router.route("/assignmentsub").get(
+    submittedornot
+)
 
 
 app.use((err, req, res, next) => {

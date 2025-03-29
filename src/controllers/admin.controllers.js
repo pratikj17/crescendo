@@ -1,7 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Admin } from "../models/admin.model.js";
 import { Trainer } from "../models/trainer.model.js";
+import {Student}  from "../models/student.model.js"
+import { Batch } from "../models/batches.model.js";
 import mongoose from "mongoose";
+
 import bcrypt from "bcryptjs";
 
 
@@ -204,6 +207,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 
+const getStudent = asyncHandler(async (req, res) => {
+     
+    const user = await Student.find().select(
+        "-password -refreshToken"
+    );
+
+    return res
+        .status(200)
+        .send(user)
+
+})
+
 const getTrainer = asyncHandler(async (req, res) => {
      
     const user = await Trainer.find().select(
@@ -216,4 +231,46 @@ const getTrainer = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser, loginUser,  logout, refreshAccessToken, getTrainer}
+
+const getBatches = asyncHandler (async (req, res) => {
+    const user = await Batch.find().select(
+        "-password -refreshToken"
+    );
+
+    return res
+        .status(200)
+        .send(user)
+})
+
+
+
+const addBatch = asyncHandler (async (req, res) => {
+    const {batchname , trainer } = req.body;
+
+    if(!batchname || !trainer){
+        res.status(400);
+        throw new Error("Please provide all field");
+    } 
+
+    const batch = Batch.create({batchname, trainer});
+
+    if(!batch){
+        res.status(500);
+        throw new Error("Something went wrong while entering the batch");
+    }
+
+    res.status(201).json({
+        message: "User created successfully",
+        batch: {
+            id: batch._id,
+            batchname: batch.batchname,
+            trainer: trainer.trainer
+        }
+    });
+})
+
+
+
+
+
+export { registerUser, loginUser,  logout, refreshAccessToken, getTrainer, getStudent, getBatches, addBatch}
