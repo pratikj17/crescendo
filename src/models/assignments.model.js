@@ -9,9 +9,13 @@ const assignmentSchema = new Schema({
        unique: true,
        
     },
-    link : {
+    fileUrl : {
       type : String,
       required :true
+    },
+    fileKey : {
+        type : String,
+        required: true
     },
     batch : {
         type : String,

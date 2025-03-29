@@ -3,6 +3,7 @@ import { DB_NAME } from './constants.js';
 import {app} from './app.js'
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import { receiveMessages } from "./controllers/file.controllers.js";
 
 import dotenv from 'dotenv';  // Use ES module import for dotenv
 dotenv.config({
@@ -16,7 +17,7 @@ import connectDB from "./db/db.js";
 
 
 
-
+receiveMessages();
 connectDB()
 .then(() => {     // why this? because when a asynchronous method gets over it returns a promise
    app.listen(process.env.PORT, () => {

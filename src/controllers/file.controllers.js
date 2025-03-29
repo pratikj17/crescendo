@@ -1,8 +1,16 @@
 import { GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3 } from '../uploadConfig.js'; // Import upload and s3
+import { Assignments } from '../models/assignments.model.js';
 import dotenv from "dotenv";
 dotenv.config();
+
+import { ServiceBusClient } from "@azure/service-bus";
+
+const CONNECTION_STRING = "Endpoint=sb://arinjayservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=s7N+jAlA4KoWO7YTDqdTCdzXdkdbTXhyV+ASbEtcppk=";
+const TOPIC_NAME = "servicebusdemotopic1"
+const SUBSCRIPTION_NAME = "servicebusdemosubscription1"
+
 
 
 const folder="uploads"
@@ -47,31 +55,133 @@ function getContentType(fileKey) {
   return mimeTypes[extension] || "application/octet-stream"; // Default if unknown
 }
 
-export const handleUpload=async (req, res) => {
-    console.log(req.body);
-    try {
-        if (!req.file) {
-        return res.status(400).json({ message: "File upload failed" });
-        }
+export const handleUpload = async (req, res) => {
+  try {
+      if (!req.file) {
+          return res.status(400).json({ message: "File upload failed" });
+      }
 
-        res.json({
-        message: "File uploaded successfully",
-        file_url: req.file.location,
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-}
+      const fileUrl = req.file.location; 
+      const fileKey = req.file.key || req.file.Key; 
+      const { name, time } = req.body;
+      const batch = req.query.batch;
+
+      await sendMessageToServiceBus({ fileUrl, fileKey, name, time, batch });
+
+      res.json({
+          message: "File uploaded successfully",
+      });
+
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+};
+
+const sendMessageToServiceBus = async ({ fileUrl, fileKey, name, time, batch }) => {
+  const serviceBusClient = new ServiceBusClient(CONNECTION_STRING);
+  const sender = serviceBusClient.createSender(TOPIC_NAME);
+
+  try {
+      const message = {
+          body: JSON.stringify({ fileUrl, fileKey, name, time, batch }),
+          contentType: "application/json"
+      };
+
+      await sender.sendMessages(message);
+      console.log("Message sent to Azure Service Bus");
+
+  } catch (error) {
+      console.error("Error sending message to Azure Service Bus:", error);
+  } finally {
+      await sender.close();
+      await serviceBusClient.close();
+  }
+};
+
+export const receiveMessages = async (req, res) => {
+  const serviceBusClient = new ServiceBusClient(CONNECTION_STRING);
+  const receiver = serviceBusClient.createReceiver(TOPIC_NAME, SUBSCRIPTION_NAME);
+
+  console.log("Listening for messages...");
+
+  receiver.subscribe({
+      processMessage: async (message) => {
+          console.log(`Received message: ${message.body}`);
+
+          try {
+              const { fileUrl, fileKey, name, time, batch } = JSON.parse(message.body);
+              console.log(fileUrl, fileKey, name, time, batch);
+
+              if (!fileKey || !fileUrl || !name || !time || !batch) {
+                  console.error("Missing data in message. Skipping...");
+                  return;
+              }
+
+              const currentTime = new Date();
+              const releaseTime = new Date(time);
+              const delayInMilliseconds = releaseTime - currentTime;
+              console.log(currentTime)
+              console.log(releaseTime)
+
+              // Convert milliseconds to seconds
+              const delayInSeconds = Math.max(Math.floor(delayInMilliseconds / 1000), 0);
+              console.log("Delay in milliseconds:", delayInMilliseconds);
+              console.log("Delay in seconds:", delayInSeconds);
+
+              if (delayInMilliseconds > 0) {
+                  setTimeout(async () => {
+                      try {
+                          const newAssignment = new Assignments({
+                            fileKey,
+                            fileUrl,
+                            name,
+                            time,
+                            batch
+
+                          });
+
+                          await newAssignment.save();
+                          console.log("Assignment saved to database:", newAssignment);
+                      } catch (dbError) {
+                          console.error("Error saving assignment to database:", dbError);
+                      }
+                  }, delayInMilliseconds); // Use delayInMilliseconds directly
+              } else {
+                  console.log(`Assignment is now visible!`);
+                  // Save immediately if the release time is in the past
+                  const newAssignment = new Assignments({
+                      fileKey,
+                      fileUrl,
+                      name,
+                      time,
+                      batch
+                  });
+
+                  await newAssignment.save();
+                  console.log("Assignment saved to database:", newAssignment);
+              }
+
+              await receiver.completeMessage(message);
+          } catch (err) {
+              console.error("Error processing message:", err);
+          }
+      },
+      processError: async (err) => {
+          console.error("Error receiving messages:", err);
+      }
+  });
+};
+
 
 export const handleDownload=async (req, res) => {
     try {
       console.log("Generating signed URL...");
       const fileKey = req.params.fileKey;
   
-      // Get the correct content type
+     
       const contentType = getContentType(fileKey);
   
-      // Check current metadata (optional but useful)
+    
       const headCommand = new HeadObjectCommand({
         Bucket: process.env.S3_BUCKET_NAME,
         Key: `${folder}/${fileKey}`,
@@ -82,7 +192,7 @@ export const handleDownload=async (req, res) => {
         await updateMetadata(fileKey, contentType); // Update metadata if needed
       }
   
-      // Generate signed URL with correct content type
+     
       const command = new GetObjectCommand({
         Bucket: process.env.S3_BUCKET_NAME,
         Key: `${folder}/${fileKey}`,
