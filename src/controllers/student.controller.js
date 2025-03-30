@@ -292,9 +292,9 @@ const getStudentAssignmentdata = asyncHandler(async(req, res) => {
 
     allAssignments.forEach(assignment => {
         if (assignment.submittedBy.includes(student._id)) {
-            completedAssignments.push(assignment.title);
+            completedAssignments.push(assignment.name);
         } else {
-            pendingAssignments.push(assignment.title);
+            pendingAssignments.push(assignment.name);
         }
     });
 

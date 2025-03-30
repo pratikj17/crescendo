@@ -5,8 +5,10 @@ import { Assignments } from '../models/assignments.model.js';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import dotenv from "dotenv";
 dotenv.config();
+import { sendVerificationEmail } from "../utils/NodeMailer.js";
 
 import { ServiceBusClient } from "@azure/service-bus";
+import { Student } from '../models/student.model.js';
 
 const CONNECTION_STRING = process.env.CONNECTION_STRING;
 const TOPIC_NAME = process.env.TOPIC_NAME
@@ -66,7 +68,8 @@ export const handleUpload = async (req, res) => {
       const fileKey = req.file.key || req.file.Key; 
       const { name, time } = req.body;
       const batch = req.query.batch;
-
+      const currentTime = new Date();
+      console.log(currentTime)
       await sendMessageToServiceBus({ fileUrl, fileKey, name, time, batch });
 
       res.json({
@@ -74,6 +77,7 @@ export const handleUpload = async (req, res) => {
       });
 
   } catch (err) {
+      console.error("Error in handleUpload:", err);
       res.status(500).json({ message: err.message });
   }
 };
@@ -83,19 +87,21 @@ const sendMessageToServiceBus = async ({ fileUrl, fileKey, name, time, batch }) 
   const sender = serviceBusClient.createSender(TOPIC_NAME);
 
   try {
-      const message = {
-          body: JSON.stringify({ fileUrl, fileKey, name, time, batch }),
-          contentType: "application/json"
-      };
+    const message = {
+      body: JSON.stringify({ fileUrl, fileKey, name, time, batch }),
+      contentType: "application/json"
+    };
 
-      await sender.sendMessages(message);
-      console.log("Message sent to Azure Service Bus");
-
+    const result = await sender.sendMessages([message]);
+    console.log("Message sent to Azure Service Bus with result:", result);
+    if (!result) {
+      console.error("Error sending message to Azure Service Bus: result is undefined");
+    }
   } catch (error) {
-      console.error("Error sending message to Azure Service Bus:", error);
+    console.error("Error sending message to Azure Service Bus:", error);
   } finally {
-      await sender.close();
-      await serviceBusClient.close();
+    await sender.close();
+    await serviceBusClient.close();
   }
 };
 
@@ -106,71 +112,85 @@ export const receiveMessages = async (req, res) => {
   console.log("Listening for messages...");
 
   receiver.subscribe({
-      processMessage: async (message) => {
-          console.log(`Received message: ${message.body}`);
+    processMessage: async (message) => {
+      console.log(`Received message: ${message.body}`);
 
-          try {
-              const { fileUrl, fileKey, name, time, batch } = JSON.parse(message.body);
-              console.log(fileUrl, fileKey, name, time, batch);
+      try {
+        const { fileUrl, fileKey, name, time, batch } = JSON.parse(message.body);
+        console.log(fileUrl, fileKey, name, time, batch);
 
-              if (!fileKey || !fileUrl || !name || !time || !batch) {
-                  console.error("Missing data in message. Skipping...");
-                  return;
-              }
+        if (!fileKey || !fileUrl || !name || !time || !batch) {
+          console.error("Missing data in message. Skipping...");
+          await receiver.completeMessage(message);
+          return;
+        }
 
-              const currentTime = new Date();
-              const releaseTime = new Date(time);
-              const delayInMilliseconds = releaseTime - currentTime;
-              console.log(currentTime)
-              console.log(releaseTime)
+        const currentTime = new Date();
+        const releaseTime = new Date(time);
 
-              // Convert milliseconds to seconds
-              const delayInSeconds = Math.max(Math.floor(delayInMilliseconds / 1000), 0);
-              console.log("Delay in milliseconds:", delayInMilliseconds);
-              console.log("Delay in seconds:", delayInSeconds);
+        // Check if the release time is valid
+        if (isNaN(releaseTime.getTime())) {
+          console.error("Invalid release time. Skipping...");
+          await receiver.completeMessage(message);
+          return;
+        }
 
-              if (delayInMilliseconds > 0) {
-                  setTimeout(async () => {
-                      try {
-                          const newAssignment = new Assignments({
-                            fileKey,
-                            fileUrl,
-                            name,
-                            time,
-                            batch
+        const delayInMilliseconds = releaseTime - currentTime;
 
-                          });
+        console.log("Current time:", currentTime);
+        console.log("Release time:", releaseTime);
+        console.log("Delay in milliseconds:", delayInMilliseconds);
 
-                          await newAssignment.save();
-                          console.log("Assignment saved to database:", newAssignment);
-                      } catch (dbError) {
-                          console.error("Error saving assignment to database:", dbError);
-                      }
-                  }, delayInMilliseconds); // Use delayInMilliseconds directly
-              } else {
-                  console.log(`Assignment is now visible!`);
-                  // Save immediately if the release time is in the past
-                  const newAssignment = new Assignments({
-                      fileKey,
-                      fileUrl,
-                      name,
-                      time,
-                      batch
-                  });
+        if (delayInMilliseconds > 0) {
+          await new Promise(resolve => setTimeout(resolve, delayInMilliseconds));
+        }
 
-                  await newAssignment.save();
-                  console.log("Assignment saved to database:", newAssignment);
-              }
-
-              await receiver.completeMessage(message);
-          } catch (err) {
-              console.error("Error processing message:", err);
-          }
-      },
-      processError: async (err) => {
-          console.error("Error receiving messages:", err);
+        await saveAssignment(fileKey, fileUrl, name, time, batch);
+        await sendVerificationEmails(batch);
+        await receiver.completeMessage(message);
+      } catch (err) {
+        console.error("Error processing message:", err);
+        // You might want to abandon the message here instead of completing it
+        // await receiver.abandonMessage(message);
       }
+    },
+    processError: async (err) => {
+      console.error("Error receiving messages:", err);
+    }
   });
+};
+
+const saveAssignment = async (fileKey, fileUrl, name, time, batch) => {
+  try {
+    const newAssignment = new Assignments({
+      fileKey,
+      fileUrl,
+      name,
+      time,
+      batch
+    });
+
+    await newAssignment.save();
+    console.log("Assignment saved to database:", newAssignment);
+  } catch (dbError) {
+    console.error("Error saving assignment to database:", dbError);
+  }
+};
+
+const sendVerificationEmails = async (batch) => {
+  try {
+    const users = await Student.find({ batch }, "email");
+    const emails = users.map(user => user.email);
+    
+    for (const email of emails) {
+      console.log(`Sending email to: ${email}`);
+      await sendVerificationEmail(email);
+    }
+    
+    console.log("All emails sent successfully!");
+  } catch (err) {
+    console.error("Error sending verification emails:", err);
+  }
 };
 
 

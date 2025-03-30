@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser"
 
 const app = express();
 
-const allowedOrigins = ["https://glitched.gamedevutopia.in", "https://gdu-feb25-event-be.onrender.com", "http://localhost:3000"];
+const allowedOrigins = ["*"];
 
 app.use(
     cors({
