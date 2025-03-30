@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser"
 
 const app = express();
 
-const allowedOrigins = ["https://yourfrontend.com", "http://localhost:5173"];
+const allowedOrigins = ["https://cresendo-frontend-nine.vercel.app", "http://localhost:5173"];
 
 app.use(
     cors({
