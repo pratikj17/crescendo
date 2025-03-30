@@ -262,21 +262,24 @@ const getAbatch = asyncHandler(async (req, res) => {
 
 
 const getUploadedAssignments = asyncHandler(async (req, res) => {
-    const batch = req.query.batch;
+    const batch = req.params.batch;
+    console.log(batch);
     
-    if(!batch){
-        res.status(404);
+    if (!batch) {
+        res.status(400); // 400 is better for "Bad Request"
         throw new Error("Batch not selected");
     }
 
-    const assignment = Assignments.find({batch});
-    if(assignment.length === 0){
+    const assignments = await Assignments.find({ batch }); // ✅ Use "await"
+
+    if (assignments.length === 0) {
         res.status(404);
         throw new Error("No uploaded assignment found for this batch");
     }
-    res.status(200).json(assignment);
 
-})
+    console.log(assignments);
+    res.status(200).json(assignments); // ✅ Return the actual assignments
+});
 
 
 const addStudent = asyncHandler(async (req, res) => {
