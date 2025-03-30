@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkpoint Input & PDF Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .checkpoint-row {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .checkpoint-row input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .checkpoint-title {
+            width: 30%;
+        }
+        .checkpoint-description {
+            width: 70%;
+        }
+        #file-name {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #error-message {
+            color: red;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            padding: 10px;
+            background-color: #ffeeee;
+            border-radius: 4px;
+            display: none;
+        }
+        #success-message {
+            color: green;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #eeffee;
+            border-radius: 4px;
+            display: none;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .section {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        #response-section {
+            display: none;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,0.3);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="section">
+    <h1>Checkpoint Input</h1>
+    <div id="checkpoints-container">
+        <div class="checkpoint-row">
+            <input type="text" placeholder="Checkpoint Title" class="checkpoint-title">
+            <input type="text" placeholder="Checkpoint Description" class="checkpoint-description">
+        </div>
+    </div>
+    <button id="add-row">Add Checkpoint</button>
+    <button id="submit">Generate JSON</button>
+</div>
+
+<div class="section">
+    <h2>Checkpoint JSON:</h2>
+    <pre id="output"></pre>
+</div>
+
+<div class="section">
+    <h1>Upload PDF</h1>
+    <input type="file" id="pdf-upload" accept="application/pdf">
+    <p id="file-name"></p>
+    <button id="upload-pdf">Upload PDF</button>
+    <span id="loading-indicator" class="loading hidden"></span>
+    <div id="success-message"></div>
+    <div id="error-message"></div>
+</div>
+
+<div id="response-section" class="section">
+    <h2>API Response:</h2>
+    <pre id="api-response"></pre>
+</div>
+<div id="data-container"></div>
+
+
+<script>
+    document.getElementById('add-row').addEventListener('click', function() {
+        const container = document.getElementById('checkpoints-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'checkpoint-row';
+        newRow.innerHTML = `
+            <input type="text" placeholder="Checkpoint Title" class="checkpoint-title">
+            <input type="text" placeholder="Checkpoint Description" class="checkpoint-description">
+        `;
+        container.appendChild(newRow);
+    });
+
+    document.getElementById('submit').addEventListener('click', function() {
+        const titles = document.querySelectorAll('.checkpoint-title');
+        const descriptions = document.querySelectorAll('.checkpoint-description');
+        const checkpoints = {};
+
+        for (let i = 0; i < titles.length; i++) {
+            const title = titles[i].value.trim();
+            const description = descriptions[i].value.trim();
+            if (title) { // Only add if there's a title
+                checkpoints[title] = { description }; // Use title as key and an object with description as value
+            }
+        }
+
+        const output = document.getElementById('output');
+        output.textContent = JSON.stringify(checkpoints, null, 2);
+    });
+
+    document.getElementById('pdf-upload').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.type === "application/pdf") {
+                document.getElementById('file-name').textContent = "Uploaded File: " + file.name;
+            } else {
+                alert("Please upload a valid PDF file.");
+                event.target.value = ""; // Reset input field
+            }
+        }
+    });
+
+    document.getElementById('upload-pdf').addEventListener('click', function() {
+        const fileInput = document.getElementById('pdf-upload');
+        const file = fileInput.files[0];
+        const errorMessageElement = document.getElementById('error-message');
+        const successMessageElement = document.getElementById('success-message');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const responseSection = document.getElementById('response-section');
+        const apiResponse = document.getElementById('api-response');
+        
+        // Reset previous messages and display
+        errorMessageElement.style.display = 'none';
+        errorMessageElement.textContent = "";
+        successMessageElement.style.display = 'none';
+        successMessageElement.textContent = "";
+        responseSection.style.display = 'none';
+        apiResponse.textContent = "";
+
+        if (!file) {
+            alert("Please select a PDF file first.");
+            return;
+        }
+
+        // Collect checkpoint data
+        const titles = document.querySelectorAll('.checkpoint-title');
+        const descriptions = document.querySelectorAll('.checkpoint-description');
+        const checkpoints = {};
+
+        for (let i = 0; i < titles.length; i++) {
+            const title = titles[i].value.trim();
+            const description = descriptions[i].value.trim();
+            if (title) {
+                checkpoints[title] = { description };
+            }
+        }
+
+        // Simple JSON string format that matches what FastAPI expects
+        const checkpointsJson = JSON.stringify(checkpoints);
+        
+        // Log what we're sending for debugging
+        console.log("PDF file being uploaded:", file);
+        console.log("Checkpoints JSON:", checkpointsJson);
+
+        // Create FormData and append file and checkpoints
+        const formData = new FormData();
+        formData.append('file', file); // Use 'file' to match FastAPI parameter name
+        formData.append('checkpoints', checkpointsJson);
+
+        // Display loading indicator
+        loadingIndicator.classList.remove('hidden');
+        
+        fetch('http://127.0.0.1:8000/upload-pdf/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    console.error("Server error details:", errorData);
+                    errorMessageElement.textContent = "Error: " + JSON.stringify(errorData, null, 2);
+                    errorMessageElement.style.display = 'block';
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }).catch(err => {
+                    // If error response is not valid JSON
+                    if (err.message.includes("SyntaxError")) {
+                        return response.text().then(errorText => {
+                            console.error("Error response (text):", errorText);
+                            errorMessageElement.textContent = `Server error: ${errorText}`;
+                            errorMessageElement.style.display = 'block';
+                            throw new Error(`Error ${response.status}: ${response.statusText}`);
+                        });
+                    }
+                    throw err;
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+    console.log("Full API Response:", data); // Log full response for debugging
+
+    const container = document.getElementById("data-container");
+    container.innerHTML = ""; // Clear previous content
+
+    for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+            const item = data[key];
+            const card = document.createElement("div");
+            card.classList.add("card");
+
+            let issuesHtml = "<ul>";
+            if (Array.isArray(item.issues) && item.issues.length > 0) {
+                item.issues.forEach(issue => {
+                    // Convert object properties to a readable string
+                    issuesHtml += `<li>${JSON.stringify(issue)}</li>`;
+                });
+            } else {
+                issuesHtml += "<li>None</li>";
+            }
+            issuesHtml += "</ul>";
+
+            card.innerHTML = `
+                <h3>${key}</h3>
+                <p class="status"><strong>Status:</strong> ${item.status || "N/A"}</p>
+                <p class="issues"><strong>Issues:</strong> ${issuesHtml}</p>
+                <hr>
+            `;
+
+            container.appendChild(card);
+        }
+    }
+})
+
+.catch(error => {
+    console.error("Error fetching data:", error);
+    if (!errorMessageElement.textContent) {
+        errorMessageElement.textContent = "Failed to load data: " + error.message;
+        errorMessageElement.style.display = 'block';
+    }
+})
+.finally(() => {
+    // Hide loading indicator
+    loadingIndicator.classList.add('hidden');
+});
+    });
+</script>
+
+</body>
+</html>
