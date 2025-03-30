@@ -7,9 +7,9 @@ dotenv.config();
 
 import { ServiceBusClient } from "@azure/service-bus";
 
-const CONNECTION_STRING = "Endpoint=sb://arinjayservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=s7N+jAlA4KoWO7YTDqdTCdzXdkdbTXhyV+ASbEtcppk=";
-const TOPIC_NAME = "servicebusdemotopic1"
-const SUBSCRIPTION_NAME = "servicebusdemosubscription1"
+const CONNECTION_STRING = process.env.CONNECTION_STRING;
+const TOPIC_NAME = process.env.TOPIC_NAME
+const SUBSCRIPTION_NAME = process.env.SUBSCRIPTION_NAME
 
 
 
