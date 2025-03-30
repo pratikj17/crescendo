@@ -10,6 +10,7 @@ The repository consists of the following branches:
 2. **Upload** - Handles **file uploads** using **AWS S3**, allowing users to upload and download files securely.
 3. **service_bus** - Handles message queuing and notifications, ensuring efficient communication between different services.
 4. **Frontend** - Frontend for **role-based auth** and **file uploads**.
+5. **AI_validator** - AI for assignment validation.
 
 ## 🚀 Getting Started
 ### **1️⃣ Clone the Repository**
@@ -73,9 +74,15 @@ npm run dev
 | POST   | /api/v1/trainer| Register a new trainer |
 | POST   | /api/v1/admin  | Admin Login            |
 
+
+
 ### **File Uploads (upload branch)**
 | Method | Endpoint                | Description              |
 |--------|-------------------------|--------------------------|
 | POST   | /files/upload           | Upload a file to S3      |
 | GET    | /files/download/:fileKey| Generate download URL    |
+
+## AI Validator
+- Used to check the assignment format uploaded by student using LLM
+- Also displays the issues in the uploaded assignment
 
