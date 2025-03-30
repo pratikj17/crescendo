@@ -2,6 +2,7 @@ import { GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3 } from '../uploadConfig.js'; // Import upload and s3
 import { Assignments } from '../models/assignments.model.js';
+import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import dotenv from "dotenv";
 dotenv.config();
 
