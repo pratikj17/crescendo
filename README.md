@@ -1,5 +1,13 @@
 # Web-Based Portal with Role-Based Access, File Uploads, and Service Bus
 
+### **1️⃣ Swagger Docs Link**
+```sh
+  https://app.swaggerhub.com/apis/GeeteshChaudhari/SkillSync/1.0.0
+
+
+https://app.swaggerhub.com/apis/GeeteshChaudhari/AI_validator/1.0.0
+```
+
 ## 📌 Project Overview
 This repository contains a **web-based portal** designed with **role-based access control**, **AWS S3 file uploads**, and **service bus integration** to manage communication between services efficiently.
 
