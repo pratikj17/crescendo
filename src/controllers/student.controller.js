@@ -28,34 +28,36 @@ const generateAccessAndRefereshTokens = async (userId) => {
 
 
 const registerUser = asyncHandler(async (req, res) => {
+   
     const { 
         username, 
-        RollNo, 
-        Batch, 
+        rollNo, 
+        batch,
         email, 
         fullname, 
         dob, 
-        Number,      
-        Fname,       
-        Fnumber,     
-        Fmail,       
-        Mname,      
-        Mnumber,    
-        resume,      
+        number,      
+        fname,       
+        fnumber,     
+        fmail,       
+        mname,      
+        mnumber,          
         password 
     } = req.body;
 
+   
+     console.log(req.body)
   
-    if ([username, RollNo, email, fullname, dob, Fname, Fnumber, Mname, Mnumber, password].some(field => !field?.toString().trim())) {
-        res.status(400);
-        throw new Error("All required fields must be provided");
-    }
+    // if (!username || !rollNo || !email ||  !fullname || !dob || !number || !fname || !fnumber || !mname || !mnumber || !password || !batch) {
+    //     res.status(400);
+    //     throw new Error("All required fields must be provided");
+    // }
 
    
-    if (resume && !resume.toLowerCase().endsWith('.pdf')) {
-        res.status(400);
-        throw new Error("Resume must be a PDF file");
-    }
+    // if (resume && !resume.toLowerCase().endsWith('.pdf')) {
+    //     res.status(400);
+    //     throw new Error("Resume must be a PDF file");
+    // }
 
     
     const existedUser = await Student.findOne({
@@ -69,18 +71,17 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const user = await Student.create({
         username,
-        RollNo,
-        Batch,       
+        rollNo,
+        batch,       
         email,
         fullname,
         dob,
-        Number,
-        Fname,
-        Fnumber,
-        Fmail,
-        Mname,
-        Mnumber,
-        resume,
+        number,
+        fname,
+        fnumber,
+        fmail,
+        mname,
+        mnumber,
         password
     });
 
@@ -137,7 +138,7 @@ const loginUser = asyncHandler(async (req, res) => {
         secure: true,
         sameSite: "None"
     }
-    res.status(200).cookie("accessToken", accessToken, optionals).cookie("refreshToken", refreshToken, optionals).cookie("email", email, optionals).cookie("username", userExist.username, optionals).cookie("Identity" , "student", optionals).json({
+    res.status(200).cookie("username", userExist.username, optionals).cookie("accessToken", accessToken, optionals).cookie("refreshToken", refreshToken, optionals).cookie("email", email, optionals).cookie("Identity" , "student", optionals).json({
         message: "Login successful",
         accessToken,
         refreshToken,
@@ -266,48 +267,53 @@ const getStudentProfileByUsername = asyncHandler(async (req, res) => {
     });
 });
 
+const getStudentAssignmentdata = asyncHandler(async (req, res) => {
+    try {
+        
+        const username = req.cookies.username;
+        console.log("Username from cookie:", username);
 
-const getStudentAssignmentdata = asyncHandler(async(req, res) => {
-      const username = req.cookie.username
-
-      if (!username) {
-        res.status(400);
-        throw new Error("Student fullname is required");
-    }
-
-   
-    const student = await Student.findOne({ username });
-
-    if (!student) {
-        res.status(404);
-        throw new Error("Student not found");
-    }
-
-    
-    const allAssignments = await Assignments.find();
-
-    
-    let completedAssignments = [];
-    let pendingAssignments = [];
-
-    allAssignments.forEach(assignment => {
-        if (assignment.submittedBy.includes(student._id)) {
-            completedAssignments.push(assignment.name);
-        } else {
-            pendingAssignments.push(assignment.name);
+        if (!username) {
+            return res.status(400).json({ message: "Student username is required" });
         }
-    });
 
-    res.status(200).json({
-        student: fullname,
-        completedAssignments,
-        pendingAssignments
-    });
-})
+       
+        const student = await Student.findOne({ username });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        console.log("Student found:", student);
+
+      
+        const allAssignments = await Assignments.find();
+        let completedAssignments = [];
+        let pendingAssignments = [];
+
+        allAssignments.forEach((assignment) => {
+            if (assignment.submittedBy?.includes(student._id)) {  // ✅ Fix: Check if submittedBy exists
+                completedAssignments.push(assignment.name);
+            } else {
+                pendingAssignments.push(assignment.name);
+            }
+        });
+
+        console.log("Completed Assignments:", completedAssignments);
+        console.log("Pending Assignments:", pendingAssignments);
+
+        res.status(200).json({
+            student: student.username,
+            completedAssignments,
+            pendingAssignments,
+        });
+    } catch (error) {
+        console.error("Error fetching assignments:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+
 
 
 
 export { registerUser, loginUser,  logout, refreshAccessToken, getStudentProfileByUsername, getStudentAssignmentdata}
-
-
-

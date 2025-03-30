@@ -206,31 +206,36 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const getBatches = asyncHandler(async (req, res) => {
-   
-    const teacher =  req.query.username;
-    
-    if(!teacher){
+    const teacher = req.query.username;
+
+    if (!teacher) {
         res.status(401);
         throw new Error("Please provide the teacher username");
     }
-    
-    const batch = await Trainer.aggregate([
-        {
-            $match: { username: teacher },
-        },
-        {
-            $project: { Batches: 1, _id: 0 }, // Only return Batches field
-        },
+
+    const batchData = await Trainer.aggregate([
+        { $match: { username: teacher } },
+        { $project: { batches: 1, _id: 0 } },
     ]);
 
-    if (!batch.length) {
-        res.status(400);
-        throw new Error("No batch provided yet");
+
+    if (!batchData.length || !batchData[0].batches) {
+        return res.status(200).json([]);
     }
 
-    return res.status(200).json(batch[0].Batches);
+    let batches = batchData[0].batches;
 
-})
+   console.log(batches)
+    // if (typeof batches === "string") {
+    //     try {
+    //         batches = JSON.parse(batches); 
+    //     } catch (error) {
+    //         return res.status(500).json({ error: "Invalid batch format in database" });
+    //     }
+    // }
+
+    return res.status(200).json(batches);
+});
 
 const getAbatch = asyncHandler(async (req, res) => {
     const batch = req.query.batch;
