@@ -33,24 +33,27 @@ def display_pdf_content(pdf_data):
         print(content)
         
     print("\n" + "="*50)
+
 def generate_prompt(pdf_data, checkpoints):
-    f"""
-    Generates a dynamic prompt for assignment evaluation based on user-defined checkpoints.
+    """
+    Generates a structured and consistent prompt for assignment evaluation based on user-defined checkpoints.
 
     :param pdf_data: Extracted text from the PDF
     :param checkpoints: A dictionary containing the required elements for validation
     :return: A formatted prompt string
     """
+
     prompt = f"""
-    You are an expert in Assignment evaluation, specializing in checking the format of academic documents. You will receive scanned input data extracted from a PDF, and you must validate its format based on user-defined checkpoints.
+    You are an expert in assignment evaluation, specializing in checking the format of academic documents. 
+    You will receive scanned input data extracted from a PDF, and you must validate its format based on user-defined checkpoints.
 
     ### INSTRUCTIONS ###
-    Please analyze this document and validate its format according to the given checkpoints:
+    Analyze this document and validate its format according to the provided checkpoints.
 
     """
 
     for index, (key, details) in enumerate(checkpoints.items(), start=1):
-        prompt += f"\n{index}. {details['description']}"
+        prompt += f"\nTitle:{key}|description:{details['description']}"
 
         if "subpoints" in details:
             for subpoint in details["subpoints"]:
@@ -58,23 +61,46 @@ def generate_prompt(pdf_data, checkpoints):
 
     prompt += f"""
     
-    For each requirement, indicate whether it PASSES or FAILS, provide specific evidence from the document, and suggest any necessary corrections.
+    ### EVALUATION CRITERIA ###
+    - For each requirement, indicate whether it PASSES or FAILS.
+    - Extract the actual content found (if present).
+    - Identify any formatting issues or inconsistencies.
+    - Specify the page number where the issue is found (if applicable).
 
-    I need you to thoroughly validate this document against the provided format requirements. For each element below:
-    1. State whether it is PRESENT or MISSING
-    2. Extract the actual content found (if present)
-    3. Note any formatting issues or inconsistencies
+    ### JSON OUTPUT FORMAT ###
+    Ensure that your output follows the strict JSON format below for consistency:
 
-    After your analysis, provide a summary of all format issues and recommended corrections.
+    {{
+        "<Checkpoint Title 1>": {{
+            "status": "PRESENT / MISSING",
+            "extracted_content": "<Extracted content from the document>",
+            "issues": [
+                {{
+                    "description": "<Issue description>",
+                    "page": <Page number>
+                }}
+            ]
+        }},
+        "<Checkpoint Title 2>": {{
+            "status": "PRESENT / MISSING",
+            "extracted_content": "<Extracted content from the document>",
+            "issues": [
+                {{
+                    "description": "<Issue description>",
+                    "page": <Page number>
+                }}
+            ]
+        }},
+        ...
+    }}
 
-    Also, specify on which page the formatting issue is found.
-
-    Present the Required Summary strictly in JSON format.
-    Only check for those checkpoints which are stated dont do other validation
+    - Each checkpoint should have a unique key in the JSON output.
+    - The key should be the checkpoint title (before the colon).
+    - Maintain the same JSON structure for all responses to ensure consistency.
 
     ### END OF INSTRUCTIONS ###
 
-    This is your input data extracted from the PDF:
+    Below is the extracted text from the PDF:
     {pdf_data}
     """
 

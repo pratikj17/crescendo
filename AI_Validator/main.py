@@ -1,19 +1,19 @@
 from fastapi import FastAPI, File, UploadFile, Form
 import json
 from io import BytesIO
-from AI import read_pdf, llminput  # Ensure AI module is implemented
+from helper import read_pdf, llminput  # Ensure AI module is implemented
 
 app = FastAPI()
 
 @app.post("/upload-pdf/")
 async def read_uploaded_pdf(
     file: UploadFile = File(...),
-    checkpoints: str = Form(...)  # Receive JSON as a string
-):
+    checkpoints: str = Form(...)):
+    print(checkpoints)
     if not file.filename.lower().endswith('.pdf'):
         return {"error": "Only PDF files are allowed."}
 
-    # Convert JSON string to dictionary
+
     try:
         checkpoints_dict = json.loads(checkpoints)
     except json.JSONDecodeError:
