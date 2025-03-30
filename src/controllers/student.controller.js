@@ -268,7 +268,7 @@ const getStudentProfileByUsername = asyncHandler(async (req, res) => {
 
 
 const getStudentAssignmentdata = asyncHandler(async(req, res) => {
-      const username = req.query
+      const username = req.cookie.username
 
       if (!username) {
         res.status(400);
