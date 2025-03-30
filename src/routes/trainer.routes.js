@@ -38,7 +38,7 @@ router.route("/getAbatch").get(
     getAbatch
 )
 
-router.route("/assignments").get(
+router.route("/assignments/:batch").get(
     getUploadedAssignments
 )
 
