@@ -16,7 +16,7 @@ dotenv.config({
 import connectDB from "./db/db.js";
 
 
-
+console.log("running receive")
 receiveMessages();
 connectDB()
 .then(() => {     // why this? because when a asynchronous method gets over it returns a promise
