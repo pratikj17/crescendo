@@ -13,7 +13,7 @@ const AssignmentsDashboard = () => {
     const fetchAssignments = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/student/studentAssignment`,
+          `https://crescendo-1.onrender.com/api/v1/student/studentAssignment`,
           { withCredentials: true }
         );
         console.log(response.data);

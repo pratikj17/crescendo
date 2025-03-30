@@ -16,7 +16,7 @@ const SubmittedAssignments = () => {
 
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:8000/api/v1/trainer/assignments/${batch}`);
+                const response = await axios.get(`https://crescendo-1.onrender.com/api/v1/trainer/assignments/${batch}`);
                 setAssignments(response.data);
                 setLoading(false);
             } catch (err) {
@@ -33,7 +33,7 @@ const SubmittedAssignments = () => {
             const cleanFileKey = fileKey.replace("uploads/", ""); // Remove 'uploads/' from fileKey
     
             // ✅ Corrected Axios request structure
-            const response = await axios.get(`http://localhost:8000/api/v1/files/download/${cleanFileKey}`);
+            const response = await axios.get(`https://crescendo-1.onrender.com/api/v1/files/download/${cleanFileKey}`);
     
             if (response.data.download_url) {
                 window.open(response.data.download_url, "_blank"); // Open in new tab

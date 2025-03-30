@@ -55,7 +55,7 @@ const FileUpload = () => {
         console.log("Uploading file:", file.name);
 
         const response = await axios.post(
-          "http://localhost:8000/api/v1/files/upload",
+          "https://crescendo-1.onrender.com/api/v1/files/upload",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },

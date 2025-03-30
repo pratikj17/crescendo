@@ -14,7 +14,7 @@ const StudentLogin = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/student/studentLogin",
+        "https://crescendo-1.onrender.com/api/v1/student/studentLogin",
         { email, password },
         { withCredentials: true }
       );

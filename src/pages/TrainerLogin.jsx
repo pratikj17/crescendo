@@ -14,7 +14,7 @@ const TrainerLogin = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/trainer/login",
+        "https://crescendo-1.onrender.com/api/v1/trainer/login",
         { email, password },
         { withCredentials: true } // Ensures cookies (if any) are sent with the request
       );

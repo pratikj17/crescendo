@@ -18,7 +18,7 @@ const TrainerSignup = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/trainer/signup",
+        "https://crescendo-1.onrender.com/api/v1/trainer/signup",
         { username, staffId, batches, email, fullname, password },
         { withCredentials: true }
       );

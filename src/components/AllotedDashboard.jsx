@@ -15,7 +15,7 @@ const AllotedDashboard = () => {
     useEffect(() => {
         const fetchBatches = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api/v1/trainer/getBatches?username=${teacherUsername}`);
+                const response = await axios.get(`https://crescendo-1.onrender.com/api/v1/trainer/getBatches?username=${teacherUsername}`);
                 setBatches(response.data); 
                 console.log(response.data); // Log data to check format
             } catch (error) {

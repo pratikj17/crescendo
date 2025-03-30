@@ -32,7 +32,7 @@ const UploadAssignment = () => {
       setUploadStatus("⏳ Uploading... Please wait."); // ✅ Show loading status
 
       const response = await axios.post(
-        `http://localhost:8000/api/v1/files/upload?batch=${batch}`,
+        `https://crescendo-1.onrender.com/api/v1/files/upload?batch=${batch}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

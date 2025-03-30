@@ -21,7 +21,7 @@ const Login = () => {
     setError(""); // Reset error message
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/admin/adminLogin",
+        "https://crescendo-1.onrender.com/api/v1/admin/adminLogin",
         {
           email,
           password,

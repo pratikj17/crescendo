@@ -32,7 +32,7 @@ const StudentSignup = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/v1/student/studentRegistration",
+        "https://crescendo-1.onrender.com/api/v1/student/studentRegistration",
         formData
       );
 
