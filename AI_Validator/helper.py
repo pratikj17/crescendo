@@ -107,7 +107,7 @@ def generate_prompt(pdf_data, checkpoints):
     return prompt
 
 def llminput(pdf_data,checkpoints):
-    api_key="AIzaSyAZ48-YSh_cidH-0gdH2A2VwSpOP16ZFmc"
+    api_key="api_key"#put yout api key here
     genai.configure(api_key=api_key)
     model1=genai.GenerativeModel("gemini-1.5-flash")
     prompt=generate_prompt(pdf_data,checkpoints)
